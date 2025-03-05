@@ -38,19 +38,21 @@ public class Welder : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        WeldPaintSystem paintSystem = other.transform.parent.GetComponent<WeldPaintSystem>();
-        if (paintSystem != null)
+        WeldPaintSystem newPaintSystem = other.transform.GetComponent<WeldPaintSystem>();
+        if (newPaintSystem != null)
         {
             isInPaintingVolume = true;
+            paintSystem = newPaintSystem;
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        WeldPaintSystem paintSystem = other.transform.parent.GetComponent<WeldPaintSystem>();
-        if (paintSystem != null)
+        WeldPaintSystem newPaintSystem = other.transform.GetComponent<WeldPaintSystem>();
+        if (newPaintSystem != null)
         {
             isInPaintingVolume = false;
+            paintSystem = null;
         }
     }
 

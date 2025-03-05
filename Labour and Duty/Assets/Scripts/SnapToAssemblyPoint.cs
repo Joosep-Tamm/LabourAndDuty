@@ -6,25 +6,17 @@ using UnityEngine.XR.Interaction.Toolkit.Interactables;
 public class SnapToAssemblyPoint : MonoBehaviour
 {
     public string compareTag;
-    public PlacementIndicator placementIndicator; // Reference to the indicator
 
     private void Start()
     {
-        // Make sure you have assigned the PlacementIndicator in the inspector
-        if (placementIndicator == null)
-        {
-            Debug.LogWarning("Placement Indicator not assigned!");
-        }
+        
     }
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag(compareTag)) // Check if the object is correct
         {
             SnapToPosition(other.gameObject); // Snap the object
-            if (placementIndicator != null)  // Hide the indicator when object is placed
-            {
-                placementIndicator.ObjectPlaced();
-            }
+            GetComponent<MeshRenderer>().enabled = false;
         }
     }
 

@@ -1,9 +1,9 @@
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 public class WrenchInteraction : MonoBehaviour
 {
     public Transform wrenchHead;
-    public Transform bolt;
     public float correctPositionThreshold = 0.05f;
     public float correctRotationThreshold = 30f;
     public float requiredRotationAngle = 60f;
@@ -11,39 +11,53 @@ public class WrenchInteraction : MonoBehaviour
     private bool isWrenchAligned = false;
     private float currentRotation = 0f;
     private Vector3 lastWrenchRotation;
+    private Transform bolt;
+    private Transform boltHead;
     private Vector3 boltAxis; // The direction of the bolt's threads
 
     public bool allowClockwiseRotation = true;
     public bool allowCounterClockwiseRotation = true;
 
-    private void Start()
-    {
-        // Assuming bolt's forward vector (z-axis) is along the thread direction
-        boltAxis = bolt.forward;
-    }
-
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Bolt"))
         {
-            Debug.Log("Checking alignment");
+            bolt = other.transform;
+            boltHead = other.transform.Find("BoltHead");
+            boltAxis = bolt.forward;
+            // Debug.Log("Checking alignment");
             CheckWrenchAlignment();
         }
     }
 
     private void OnTriggerStay(Collider other)
     {
-        if (other.CompareTag("Bolt") && isWrenchAligned)
+        if (other.transform == bolt)
         {
-            Debug.Log("Tracking rotation");
-            TrackWrenchRotation();
+            if (isWrenchAligned)
+            {
+                // Debug.Log("Tracking rotation");
+                TrackWrenchRotation();
+            }
+            else
+            {
+                CheckWrenchAlignment();
+            }
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.transform == bolt)
+        {
+            bolt = null;
         }
     }
 
     private void CheckWrenchAlignment()
     {
         // Check position
-        float distance = Vector3.Distance(wrenchHead.position, bolt.position);
+        float distance = Vector3.Distance(wrenchHead.position, boltHead.position);
 
         // Check if wrench is perpendicular to bolt axis
         Vector3 wrenchForward = wrenchHead.forward;
@@ -65,7 +79,7 @@ public class WrenchInteraction : MonoBehaviour
         bool isAlignedWithHex = false;
         for (int i = 0; i < 6; i++)
         {
-            float targetAngle = i * 60f;
+            float targetAngle = i * 60f + -30f;
             if (Mathf.Abs(Mathf.DeltaAngle(angleOnPlane, targetAngle)) <= correctRotationThreshold)
             {
                 isAlignedWithHex = true;
@@ -79,7 +93,9 @@ public class WrenchInteraction : MonoBehaviour
 
         if (isWrenchAligned)
         {
+            bolt.gameObject.GetComponent<BoltInteraction>().ReportWrenchAction(true);
             lastWrenchRotation = wrenchHead.eulerAngles;
+            // Debug.Log("Wrench aligned");
         }
     }
 
@@ -121,10 +137,12 @@ public class WrenchInteraction : MonoBehaviour
 
     private void BoltTurnComplete()
     {
-        Debug.Log("Bolt has been turned successfully!");
+        // Debug.Log("Bolt has been turned successfully!");
+
         // Add your completion logic here
         // For example: animate the bolt, trigger next game event, etc.
-        bolt.transform.parent.transform.position = new Vector3(bolt.transform.parent.transform.position.x, bolt.transform.parent.transform.position.y, bolt.transform.parent.transform.position.z + 0.03f);
+        currentRotation = 0f;
+        bolt.gameObject.GetComponent<BoltInteraction>().ReportWrenchAction(true);
     }
 
     // Visual debugging

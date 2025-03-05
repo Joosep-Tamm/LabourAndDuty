@@ -10,6 +10,8 @@ TagManager:
   - Bolt
   - Nail
   - Hammer
+  - WrenchIndicator
+  - RotateIndicator
   layers:
   - Default
   - TransparentFX
