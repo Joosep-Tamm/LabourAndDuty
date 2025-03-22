@@ -62,6 +62,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7234930715528157390}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
+--- !u!1 &2634536710080646721
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1167662466842167085}
+  m_Layer: 0
+  m_Name: WrenchHead
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1167662466842167085
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2634536710080646721}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: 0.26, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7234930715528157390}
+  m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
 --- !u!1 &8010904881565926004
 GameObject:
   m_ObjectHideFlags: 0
@@ -74,11 +105,11 @@ GameObject:
   - component: {fileID: 6037208006650845035}
   - component: {fileID: 8371224119424951201}
   - component: {fileID: 6215706484750706921}
-  - component: {fileID: 1953021944995948549}
   - component: {fileID: 5010169444663588329}
   - component: {fileID: 5970967320119017466}
   - component: {fileID: 6621898950554106003}
   - component: {fileID: 6694070656192226788}
+  - component: {fileID: 4141965165039903121}
   m_Layer: 0
   m_Name: Wrench
   m_TagString: Wrench
@@ -96,11 +127,12 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.2, y: 1.2, z: 1.2}
+  m_LocalScale: {x: 1.2, y: 1.2000003, z: 1.2000003}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 4376711922927323916}
   - {fileID: 6385926613056879327}
+  - {fileID: 1167662466842167085}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &6037208006650845035
@@ -180,7 +212,29 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &1953021944995948549
+--- !u!64 &5010169444663588329
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8010904881565926004}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -3136520972594206927, guid: 14f2837993714674bb122799de8153ec, type: 3}
+--- !u!114 &5970967320119017466
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -189,7 +243,60 @@ MonoBehaviour:
   m_GameObject: {fileID: 8010904881565926004}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0ad34abafad169848a38072baa96cdb2, type: 3}
+  m_Script: {fileID: 11500000, guid: e9f4091725fa99343a498a36745a26c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rightHandGrabPoint: {fileID: 6385926613056879327}
+  leftHandGrabPoint: {fileID: 4376711922927323916}
+--- !u!114 &6621898950554106003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8010904881565926004}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 245a802b0780bc641ae6b0590fc76616, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  wrenchHead: {fileID: 1167662466842167085}
+  correctPositionThreshold: 0.07
+  correctRotationThreshold: 15
+  requiredRotationAngle: 60
+  allowClockwiseRotation: 1
+  allowCounterClockwiseRotation: 0
+--- !u!65 &6694070656192226788
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8010904881565926004}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.035, y: 0.04, z: 0.024646685}
+  m_Center: {x: 0.003, y: 0.267, z: -0.000000010244548}
+--- !u!114 &4141965165039903121
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8010904881565926004}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b0fdd94eea16654790aaa19de01c000, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_InteractionManager: {fileID: 0}
@@ -259,7 +366,7 @@ MonoBehaviour:
   m_MatchAttachRotation: 1
   m_SnapToColliderVolume: 1
   m_ReinitializeDynamicAttachEverySingleGrab: 1
-  m_AttachEaseInTime: 0
+  m_AttachEaseInTime: 0.15
   m_MovementType: 2
   m_VelocityDamping: 1
   m_VelocityScale: 1
@@ -302,78 +409,3 @@ MonoBehaviour:
   m_StartingMultipleGrabTransformers: []
   m_AddDefaultGrabTransformers: 1
   m_FarAttachMode: 0
---- !u!64 &5010169444663588329
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8010904881565926004}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -3136520972594206927, guid: 14f2837993714674bb122799de8153ec, type: 3}
---- !u!114 &5970967320119017466
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8010904881565926004}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e9f4091725fa99343a498a36745a26c0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  rightHandGrabPoint: {fileID: 6385926613056879327}
-  leftHandGrabPoint: {fileID: 4376711922927323916}
---- !u!114 &6621898950554106003
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8010904881565926004}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 245a802b0780bc641ae6b0590fc76616, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  wrenchHead: {fileID: 0}
-  bolt: {fileID: 0}
-  correctPositionThreshold: 0.05
-  correctRotationThreshold: 15
-  requiredRotationAngle: 90
-  showDebug: 1
---- !u!65 &6694070656192226788
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8010904881565926004}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.07752153, y: 0.07, z: 0.024646685}
-  m_Center: {x: -0.001254512, y: 0.265, z: -0.000000010244548}

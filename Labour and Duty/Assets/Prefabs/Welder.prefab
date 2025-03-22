@@ -4900,19 +4900,19 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 76f0a07a1969b924da894d4ace6e6cdb, type: 3}
       propertyPath: m_LocalScale.x
-      value: 25
+      value: 22
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 76f0a07a1969b924da894d4ace6e6cdb, type: 3}
       propertyPath: m_LocalScale.y
-      value: 25
+      value: 22
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 76f0a07a1969b924da894d4ace6e6cdb, type: 3}
       propertyPath: m_LocalScale.z
-      value: 25
+      value: 22
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 76f0a07a1969b924da894d4ace6e6cdb, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -1.39
+      value: -1.54
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 76f0a07a1969b924da894d4ace6e6cdb, type: 3}
       propertyPath: m_LocalPosition.y
@@ -4960,7 +4960,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 7d7643ab132342849a9450047b8feebe, type: 2}
     - target: {fileID: 919132149155446097, guid: 76f0a07a1969b924da894d4ace6e6cdb, type: 3}
       propertyPath: m_Name
-      value: welder
+      value: Welder
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4980,13 +4980,13 @@ PrefabInstance:
       addedObject: {fileID: 400301109927479114}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 76f0a07a1969b924da894d4ace6e6cdb, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1543094353591137210}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 76f0a07a1969b924da894d4ace6e6cdb, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 7238021130367303757}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 76f0a07a1969b924da894d4ace6e6cdb, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2315500516042804466}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 76f0a07a1969b924da894d4ace6e6cdb, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8978639926889750769}
   m_SourcePrefab: {fileID: 100100000, guid: 76f0a07a1969b924da894d4ace6e6cdb, type: 3}
 --- !u!4 &2503442573156687925 stripped
 Transform:
@@ -5025,7 +5025,29 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &1543094353591137210
+--- !u!64 &7238021130367303757
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3023555190795565711}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 5461320835613783329, guid: 76f0a07a1969b924da894d4ace6e6cdb, type: 3}
+--- !u!114 &2315500516042804466
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5034,7 +5056,22 @@ MonoBehaviour:
   m_GameObject: {fileID: 3023555190795565711}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0ad34abafad169848a38072baa96cdb2, type: 3}
+  m_Script: {fileID: 11500000, guid: 4eb006b2caa87da488c499acd4021529, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sparkParticles: {fileID: 8130074390568029595}
+  weldPoint: {fileID: 5173236439303929225}
+  paintSystem: {fileID: 0}
+--- !u!114 &8978639926889750769
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3023555190795565711}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b0fdd94eea16654790aaa19de01c000, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_InteractionManager: {fileID: 0}
@@ -5122,7 +5159,7 @@ MonoBehaviour:
   m_SmoothScale: 0
   m_SmoothScaleAmount: 8
   m_TightenScale: 0.1
-  m_ThrowOnDetach: 1
+  m_ThrowOnDetach: 0
   m_ThrowSmoothingDuration: 0.25
   m_ThrowSmoothingCurve:
     serializedVersion: 2
@@ -5147,38 +5184,3 @@ MonoBehaviour:
   m_StartingMultipleGrabTransformers: []
   m_AddDefaultGrabTransformers: 1
   m_FarAttachMode: 0
---- !u!64 &7238021130367303757
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3023555190795565711}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 5461320835613783329, guid: 76f0a07a1969b924da894d4ace6e6cdb, type: 3}
---- !u!114 &2315500516042804466
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3023555190795565711}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4eb006b2caa87da488c499acd4021529, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  sparkParticles: {fileID: 8130074390568029595}
