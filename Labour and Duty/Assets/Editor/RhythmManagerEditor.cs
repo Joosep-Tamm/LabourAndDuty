@@ -71,6 +71,30 @@ public class RhythmManagerEditor : Editor
             EditorUtility.SetDirty(manager);
         }
 
+        if (GUILayout.Button("Add Placement Action"))
+        {
+            var sequence = manager.sequences[manager.currentSequenceIndex];
+            var newAction = new PlacementRhythmAction
+            {
+                actionType = ActionType.Placement,
+                requiredTag = ""
+            };
+            ArrayUtility.Add(ref sequence.actions, newAction);
+            EditorUtility.SetDirty(manager);
+        }
+
+        if (GUILayout.Button("Add Object Drop Off Action"))
+        {
+            var sequence = manager.sequences[manager.currentSequenceIndex];
+            var newAction = new ObjectDropOff
+            {
+                actionType = ActionType.DropOff,
+                moveTime = 0f
+            };
+            ArrayUtility.Add(ref sequence.actions, newAction);
+            EditorUtility.SetDirty(manager);
+        }
+
         serializedObject.ApplyModifiedProperties();
     }
 }

@@ -120,7 +120,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   compareTag: Wheel
-  placementIndicator: {fileID: 3200789320797911178}
 --- !u!114 &3200789320797911178
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -146,9 +145,10 @@ GameObject:
   m_Component:
   - component: {fileID: 7574725825018735783}
   - component: {fileID: 8088899519412151347}
+  - component: {fileID: 9108287246993469612}
   m_Layer: 0
   m_Name: New Car
-  m_TagString: Untagged
+  m_TagString: Car
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -163,8 +163,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 6313598188576509578}
   - {fileID: 2948944223761941288}
@@ -193,10 +193,25 @@ Rigidbody:
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
-  m_IsKinematic: 0
+  m_IsKinematic: 1
   m_Interpolate: 1
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &9108287246993469612
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 632161405121123607}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd23c337fb9ca0e4cb299f4fd237fedc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  toInteractionArea: {x: 0, y: 0, z: -13.25}
+  toDropOff: {x: -8, y: 0, z: 0}
+  timeToMove: 10
 --- !u!1 &1527458994046056678
 GameObject:
   m_ObjectHideFlags: 0
@@ -245,7 +260,7 @@ GameObject:
   - component: {fileID: 1092242802900748700}
   - component: {fileID: 2637925247490635448}
   - component: {fileID: 384787288023473824}
-  - component: {fileID: 340798687783896891}
+  - component: {fileID: 4192192630469000579}
   m_Layer: 0
   m_Name: Back Left
   m_TagString: Untagged
@@ -352,8 +367,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   compareTag: Wheel
-  placementIndicator: {fileID: 340798687783896891}
---- !u!114 &340798687783896891
+--- !u!114 &4192192630469000579
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -362,12 +376,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 3218721883767796112}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 013dd82bca7915746b60c9aa08001d19, type: 3}
+  m_Script: {fileID: 11500000, guid: a2a28f5bfd3635046a21db17ca7d039c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pulseSpeed: 2
-  minAlpha: 0.2
-  maxAlpha: 0.6
+  baseMaterial: {fileID: 2100000, guid: 7085fd16b40216143800a9fb82929c4f, type: 2}
+  glowIntensity: 2
+  glowColor: {r: 0.08250165, g: 1, b: 0, a: 1}
+  targetScale: 1
+  timeToHit: 10
 --- !u!1 &3893615262458194012
 GameObject:
   m_ObjectHideFlags: 0
@@ -488,7 +504,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   compareTag: Wheel
-  placementIndicator: {fileID: 2347260768685042589}
 --- !u!114 &2347260768685042589
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -624,7 +639,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   compareTag: Wheel
-  placementIndicator: {fileID: 3505186312986312288}
 --- !u!114 &3505186312986312288
 MonoBehaviour:
   m_ObjectHideFlags: 0

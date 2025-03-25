@@ -6,6 +6,8 @@ using Unity.XR.CoreUtils;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit.Interactors.Visuals;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
+using System.Net;
+using static UnityEngine.Rendering.DebugUI;
 
 // First, create an enum for all possible action types
 public enum ActionType
@@ -13,7 +15,9 @@ public enum ActionType
     WrenchPlace,
     WrenchRotate,
     NailHit,
-    Weld
+    Weld,
+    Placement,
+    DropOff
 }
 
 [System.Serializable]
@@ -24,6 +28,18 @@ public class RhythmAction
     public float indicatorTime;   // How long before to show indicator
     public float window;          // Time window to complete action
     public string targetObjectID; // Reference to object action relates to
+}
+
+[System.Serializable]
+public class ObjectDropOff : RhythmAction
+{
+    public float moveTime; // How long the object should take to exit the view
+}
+
+[System.Serializable]
+public class PlacementRhythmAction : RhythmAction
+{
+    public string requiredTag; // Should match the compareTag in SnapToAssemblyPoint
 }
 
 [System.Serializable]
@@ -82,20 +98,23 @@ public class WrenchRhythmAction : RhythmAction
 }
 
 [System.Serializable]
-public class SpawnPoint
+public class SpawnableObject
 {
     public Vector3 position;
     public Vector3 rotation;
+    public Vector3 scale;
     public GameObject prefab;  // The object to spawn (bolt, nail, etc.)
     public float spawnTime;   // When to spawn this object
+    public float beltTime;  // How long the object should take on the belt to reach the player
     public string objectID; // Object to be spawned
+    public string parentID; // Parent object (if it has one) e.g box being aprent of nail
 }
 
 [System.Serializable]
 public class LevelSequence
 {
     public string sequenceName;
-    public SpawnPoint[] spawnPoints;  // List of objects to spawn and when
+    public SpawnableObject[] spawnableObjects;  // List of objects to spawn and when
     [SerializeReference]
     public RhythmAction[] actions;    // List of actions to perform on those objects
 }
@@ -114,7 +133,7 @@ public class RhythmManager : MonoBehaviour
     private Dictionary<string, (WeldGuideSystem guideSystem, WeldPaintSystem paintSystem)> weldSystems = new Dictionary<string, (WeldGuideSystem, WeldPaintSystem)>();
     private Dictionary<string, (NailInteraction nail, NailRhythmAction action, GameObject indicator)> activeNails = new Dictionary<string, (NailInteraction, NailRhythmAction, GameObject indicator)>();
     private Dictionary<(string objectId, ActionType actionType), (BoltInteraction bolt, WrenchRhythmAction action, GameObject indicator)> activeBolts = new Dictionary<(string, ActionType), (BoltInteraction, WrenchRhythmAction, GameObject)>();
-    private List<GameObject> spawnedObjects = new List<GameObject>();
+    private Dictionary<string, (SnapToAssemblyPoint snap, PlacementRhythmAction action, GameObject indicator)> activePlacements = new Dictionary<string, (SnapToAssemblyPoint, PlacementRhythmAction, GameObject)>();
     private bool outOfActions = false;
 
     private Dictionary<string, GameObject> spawnedObjectsById = new Dictionary<string, GameObject>();
@@ -128,6 +147,8 @@ public class RhythmManager : MonoBehaviour
     private bool isInitialized = false;
 
     [SerializeField] private AudioSource audioSource;
+    [SerializeField] private SpawnPoint spawnPoint;
+    [SerializeField] private string[] parentObjectTags;
 
     [SerializeField] private XRRayInteractor leftInteractor;
     [SerializeField] private XRInteractorLineVisual leftInteractorVisual;
@@ -223,12 +244,12 @@ public class RhythmManager : MonoBehaviour
         LevelSequence currentSequence = sequences[currentSequenceIndex];
         int nextSpawnIndex = 0;
 
-        while (nextSpawnIndex < currentSequence.spawnPoints.Length)
+        while (nextSpawnIndex < currentSequence.spawnableObjects.Length)
         {
             if (!isPlaying) yield return null;
 
             float currentTime = GetSequenceTime();
-            SpawnPoint nextSpawn = currentSequence.spawnPoints[nextSpawnIndex];
+            SpawnableObject nextSpawn = currentSequence.spawnableObjects[nextSpawnIndex];
 
             if (currentTime >= nextSpawn.spawnTime)
             {
@@ -240,13 +261,33 @@ public class RhythmManager : MonoBehaviour
         }
     }
 
-    private void SpawnObject(SpawnPoint spawnPoint)
+    private void SpawnObject(SpawnableObject objectToSpawn)
     {
-        Quaternion rotation = Quaternion.Euler(spawnPoint.rotation);
-        GameObject spawnedObject = Instantiate(spawnPoint.prefab, spawnPoint.position, rotation);
-        Debug.Log("Spawning object: " + spawnPoint.objectID + ", time: " + Time.timeAsDouble);
-        spawnedObjects.Add(spawnedObject);
-        spawnedObjectsById[spawnPoint.objectID] = spawnedObject;
+        if (objectToSpawn.objectID.Contains("Wheel"))
+        {
+            GameObject wheel = Instantiate(objectToSpawn.prefab, objectToSpawn.position, Quaternion.Euler(objectToSpawn.rotation));
+            spawnedObjectsById[objectToSpawn.objectID] = wheel;
+            return;
+        }
+        if (parentObjectTags.Contains(objectToSpawn.objectID))
+        {
+            GameObject spawned = spawnPoint.Spawn(objectToSpawn.prefab, objectToSpawn.beltTime);
+            spawnedObjectsById[objectToSpawn.objectID] = spawned;
+            return;
+        }
+        if (!spawnedObjectsById.ContainsKey(objectToSpawn.parentID))
+        {
+            return;
+        }
+        Transform parentTransform = spawnedObjectsById[objectToSpawn.parentID].transform;
+
+        GameObject spawnedObject = Instantiate(objectToSpawn.prefab, parentTransform);
+        spawnedObject.transform.localPosition = objectToSpawn.position;
+        spawnedObject.transform.localRotation = Quaternion.Euler(objectToSpawn.rotation);
+        spawnedObject.transform.localScale = objectToSpawn.scale;
+        Debug.Log("Spawning object: " + objectToSpawn.objectID + ", time: " + Time.timeAsDouble);
+        spawnedObjectsById[objectToSpawn.objectID] = spawnedObject;
+        Debug.Log("Item " + objectToSpawn.prefab.name + " spawned at local pos: " + spawnedObject.transform.localPosition);
 
         // If this is a weld surface, store its systems
         WeldGuideSystem guideSystem = spawnedObject.GetComponentInChildren<WeldGuideSystem>();
@@ -254,8 +295,8 @@ public class RhythmManager : MonoBehaviour
         if (guideSystem != null && paintSystem != null)
         {
             guideSystem.HideGuideLine();
-            paintSystem.enabled = false;
-            weldSystems[spawnPoint.objectID] = (guideSystem, paintSystem);
+            paintSystem.DisableWelding();
+            weldSystems[objectToSpawn.objectID] = (guideSystem, paintSystem);
         }
 
         // If this is a bolt, store its indicators
@@ -311,10 +352,14 @@ public class RhythmManager : MonoBehaviour
 
     private void SpawnNewAction(RhythmAction action)
     {
+        Debug.Log("Spawning action: " + action.actionType + ", " + action.targetObjectID);
         // Find the target object this action applies to
         GameObject targetObject;
         if (!spawnedObjectsById.TryGetValue(action.targetObjectID, out targetObject))
+        {
+            Debug.Log("Could not find object " + action.targetObjectID);
             return;
+        }
 
         switch (action.actionType)
         {
@@ -372,6 +417,30 @@ public class RhythmManager : MonoBehaviour
                     guideSystem.SetTimeToHit(weldAction.indicatorTime);
 
                     guideSystem.ShowGuideLine();
+                    paintSystem.DisableWelding();
+                }
+                break;
+
+            case ActionType.DropOff:
+                var dropOffAction = action as ObjectDropOff;
+                GameObject objectToMove = spawnedObjectsById[dropOffAction.targetObjectID];
+                MovementOnBelt movement = objectToMove.GetComponent<MovementOnBelt>();
+                if (movement != null)
+                {
+                    movement.MoveToDropOff(action.window);
+                }
+                break;
+
+            case ActionType.Placement:
+                Debug.Log("Spawning placement action");
+                var placementAction = action as PlacementRhythmAction;
+                if (placementAction != null)
+                {
+                    HandlePlacementAction(targetObject, placementAction);
+                }
+                else
+                {
+                    Debug.Log(placementAction);
                 }
                 break;
         }
@@ -416,7 +485,7 @@ public class RhythmManager : MonoBehaviour
                         if (weldSystems.ContainsKey(action.targetObjectID))
                         {
                             weldSystems[action.targetObjectID].guideSystem.HideGuideLine();
-                            weldSystems[action.targetObjectID].paintSystem.enabled = false;
+                            weldSystems[action.targetObjectID].paintSystem.DisableWelding();
                         }
                         break;
                 }
@@ -444,6 +513,12 @@ public class RhythmManager : MonoBehaviour
                         if (weldSystems.ContainsKey(action.targetObjectID))
                         {
                             weldSystems[action.targetObjectID].paintSystem.EnableWelding();
+                        }
+                        break;
+                    case ActionType.Placement:
+                        if (activePlacements.ContainsKey(action.targetObjectID))
+                        {
+                            activePlacements[action.targetObjectID].snap.EnableSnap();
                         }
                         break;
                 }
@@ -622,6 +697,35 @@ public class RhythmManager : MonoBehaviour
         }
     }
 
+    private void HandlePlacementAction(GameObject targetObject, PlacementRhythmAction placementAction)
+    {
+        Debug.Log("Handling placement for: " + placementAction.targetObjectID);
+        var snapPoint = targetObject.GetComponent<SnapToAssemblyPoint>();
+        if (snapPoint == null)
+        {
+            Debug.LogError($"No SnapToAssemblyPoint found on {targetObject.name}");
+            return;
+        }
+
+        // Find and setup the indicator
+        var indicator = targetObject.GetComponent<Indicator>();
+        if (indicator != null)
+        {
+            indicator.timeToHit = placementAction.indicatorTime;
+            indicator.gameObject.SetActive(true);
+        }
+        else
+        {
+            Debug.Log("Could not find indicator on " + targetObject.name);
+        }
+
+        // Add a trigger detection component to handle the snap event
+        snapPoint.OnObjectSnapped += (success) => HandlePlacementComplete(placementAction.targetObjectID, success);
+
+        // Store the placement information
+        activePlacements[placementAction.targetObjectID] = (snapPoint, placementAction, indicator?.gameObject);
+    }
+
     private bool CheckActionCompletion(RhythmAction action)
     {
         switch (action.actionType)
@@ -754,6 +858,36 @@ public class RhythmManager : MonoBehaviour
         }
     }
 
+    private void HandlePlacementComplete(string objectId, bool success)
+    {
+        if (!activePlacements.ContainsKey(objectId)) return;
+
+        var (snap, action, indicator) = activePlacements[objectId];
+        float currentTime = GetSequenceTime();
+
+        if (IsWithinWindow(currentTime, action.actionTime, action.window))
+        {
+            if (success)
+            {
+                // Hide indicator
+                if (indicator != null)
+                {
+                    //indicator.SetActive(false);
+                }
+
+                snap.DisableSnap();
+
+                // Remove from active actions and placements
+                var rhythmAction = activeActions.Find(a => a.targetObjectID == objectId && a.actionType == ActionType.Placement);
+                if (rhythmAction != null)
+                {
+                    activeActions.Remove(rhythmAction);
+                }
+                activePlacements.Remove(objectId);
+            }
+        }
+    }
+
     private void HandleSuccessfulAction(RhythmAction action)
     {
         if (actionIndicators.ContainsKey(action))
@@ -775,7 +909,7 @@ public class RhythmManager : MonoBehaviour
                         guideSystem.HideGuideLine();
 
 
-                        paintSystem.enabled = false;
+                        //paintSystem.enabled = false;
                         paintSystem.DisableWelding();
                     }
                     break;
@@ -827,8 +961,24 @@ public class RhythmManager : MonoBehaviour
                     guideSystem.HideGuideLine();
 
                     
-                    paintSystem.enabled = false;
+                    //paintSystem.enabled = false;
                     paintSystem.DisableWelding(); 
+                }
+                break;
+            case ActionType.Placement:
+                if (activePlacements.ContainsKey(action.targetObjectID))
+                {
+                    var (snap, placementAction, indicator) = activePlacements[action.targetObjectID];
+                    if (indicator != null)
+                    {
+                        indicator.SetActive(false);
+                    }
+                    foreach (GameObject toDelete in GameObject.FindGameObjectsWithTag(placementAction.requiredTag)){
+                        string item = spawnedObjectsById.First(kvp => kvp.Value == toDelete).Key;
+                        spawnedObjectsById.Remove(item);
+                        Destroy(toDelete);
+                    }
+                    activePlacements.Remove(action.targetObjectID);
                 }
                 break;
         }
@@ -840,17 +990,18 @@ public class RhythmManager : MonoBehaviour
     {
         //Debug.Log("Sequence " + sequences[currentSequenceIndex].sequenceName + " complete");
         // Clean up all spawned objects
-        foreach (var obj in spawnedObjects)
+        foreach (var obj in spawnedObjectsById.Values)
         {
             if (obj != null)
                 Destroy(obj);
         }
-        spawnedObjects.Clear();
         spawnedObjectsById.Clear();
         boltIndicators.Clear();
         actionIndicators.Clear();
         weldSystems.Clear();
         activeNails.Clear();
+        activePlacements.Clear();
+        audioSource.Stop();
 
         // Move to next sequence or end
         currentSequenceIndex++;
@@ -866,7 +1017,7 @@ public class RhythmManager : MonoBehaviour
 
     public void ResetSequence()
     {
-        foreach (var obj in spawnedObjects)
+        foreach (var obj in spawnedObjectsById.Values)
         {
             if (obj != null)
                 Destroy(obj);
@@ -874,12 +1025,12 @@ public class RhythmManager : MonoBehaviour
         isPlaying = false;
         isPaused = false;
         activeActions.Clear();
-        spawnedObjects.Clear();
         spawnedObjectsById.Clear();
         boltIndicators.Clear();
         actionIndicators.Clear();
         weldSystems.Clear();
         activeNails.Clear();
+        activePlacements.Clear();
     }
 
     private bool IsWithinWindow(float currentTime, float targetTime, float window)

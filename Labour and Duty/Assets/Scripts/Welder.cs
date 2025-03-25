@@ -32,6 +32,7 @@ public class Welder : MonoBehaviour
     {
         if (isWelding && paintSystem != null && isInPaintingVolume)
         {
+            Debug.Log("Painting");
             paintSystem.PaintWeld(weldPoint.position);
         }
     }

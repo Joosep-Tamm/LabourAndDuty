@@ -70,6 +70,12 @@ public class RhythmActionDrawer : PropertyDrawer
                 case ActionType.WrenchRotate:
                     totalHeight += (lineHeight + spacing) * 1;
                     break;
+                case ActionType.DropOff:
+                    totalHeight += (lineHeight + spacing) * 1;
+                    break;
+                case ActionType.Placement:
+                    totalHeight += (lineHeight + spacing) * 1;
+                    break;
             }
         }
 
@@ -206,6 +212,8 @@ public class RhythmActionDrawer : PropertyDrawer
             case ActionType.WrenchPlace:
             case ActionType.WrenchRotate:
                 return new[] { "isPlacement" };
+            case ActionType.Placement:
+                return new[] { "requiredTag" };
             default:
                 return null;
         }

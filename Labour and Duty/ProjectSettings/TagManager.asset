@@ -12,6 +12,10 @@ TagManager:
   - Hammer
   - WrenchIndicator
   - RotateIndicator
+  - Box
+  - Car
+  - Vessel
+  - Attached
   layers:
   - Default
   - TransparentFX

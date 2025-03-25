@@ -136,27 +136,61 @@ public class WeldPaintSystem : MonoBehaviour
             paintingVolume = gameObject.AddComponent<BoxCollider>();
         }
 
-        // Get the size of the weld surface
-        Vector3 surfaceSize = weldSurfaceRenderer.bounds.size;
+        Bounds worldBounds = weldSurfaceRenderer.bounds;
+
+        Vector3 localSize = new Vector3(
+            worldBounds.size.x / transform.lossyScale.x,
+            worldBounds.size.y / transform.lossyScale.y,
+            paintingHeight * 2f    // Since this is already in local space
+        );
+
+        Debug.Log($"World bounds size: {worldBounds.size}");
+        Debug.Log($"Local scale: {transform.lossyScale}");
+        Debug.Log($"Calculated local size: {localSize}");
 
         // Make the collider match the surface width/length but taller
-        paintingVolume.size = new Vector3(surfaceSize.x, surfaceSize.y, paintingHeight * 2f);
+        paintingVolume.size = localSize;
         paintingVolume.center = new Vector3(0, 0, 0); // Center it on the surface
         paintingVolume.isTrigger = true; // Make it a trigger
+
+        Debug.Log($"Bounds: {paintingVolume.bounds}");
+        Debug.Log($"Size: {paintingVolume.size}");
+    }
+
+    private Vector2 GetScaledBrushSize()
+    {
+        // Get both scale factors
+        float scaleX = transform.localScale.y / 2;
+        float scaleY = transform.localScale.x / 2;
+
+        // Base brush size adjusted for each dimension
+        float brushSizeX = brushSize * scaleX;
+        float brushSizeY = brushSize * scaleY;
+
+        // Clamp both dimensions
+        brushSizeX = Mathf.Clamp(brushSizeX, 1f, textureSize * 0.25f);
+        brushSizeY = Mathf.Clamp(brushSizeY, 1f, textureSize * 0.25f);
+
+        return new Vector2(brushSizeX, brushSizeY);
     }
 
     public void PaintWeld(Vector3 worldPosition)
     {
-        if (!isInitialized || !canWeld || !enabled || weldSurfaceRenderer == null) return;
+        if (!isInitialized || !canWeld || !enabled || weldSurfaceRenderer == null)
+        {
+            //Debug.Log($"{isInitialized}, {canWeld}, {enabled}");
+            return;
+        }
 
         // Project the point onto the weld surface
         Vector3 projectedPoint = ProjectPointOntoSurface(worldPosition);
-
+        Debug.Log("paintpoint: " + projectedPoint);
 
         // Check if point is within bounds
         Bounds volumeBounds = paintingVolume.bounds;
         if (!volumeBounds.Contains(worldPosition))
         {
+            Debug.Log("paint spot out of bounds, point: " + worldPosition + ", bounds: " + volumeBounds);
             return; // Point is not within this surface's volume
         }
 
@@ -172,7 +206,7 @@ public class WeldPaintSystem : MonoBehaviour
 
         uvPosition.x = Mathf.Clamp(uvPosition.x, 0, textureSize);
         uvPosition.y = Mathf.Clamp(uvPosition.y, 0, textureSize);
-        //Debug.Log($"Painting at UV position: {uvPosition}");
+        Debug.Log($"Painting at UV position: {uvPosition}");
 
         // Paint at the UV position
         RenderTexture.active = weldTexture;
@@ -186,11 +220,13 @@ public class WeldPaintSystem : MonoBehaviour
             new Rect(0, 0, 1, 1), 0, 0, 0, 0, weldColor); 
         */
 
+        Vector2 brushSize = GetScaledBrushSize();
+
         Rect brushRect = new Rect(
-            uvPosition.x - brushSize / 2,
-            (textureSize - uvPosition.y) - brushSize / 2,
-            brushSize,
-            brushSize
+            uvPosition.x - brushSize.x / 2,
+            (textureSize - uvPosition.y) - brushSize.y / 2,
+            brushSize.x,
+            brushSize.y
         );
 
         Graphics.DrawTexture(brushRect, circularBrush, new Rect(0, 0, 1, 1), 0, 0, 0, 0, weldColor);
@@ -220,12 +256,10 @@ public class WeldPaintSystem : MonoBehaviour
         // Convert world position to local position on the surface
         Vector3 localPos = transform.InverseTransformPoint(worldPos);
 
-        // Get the actual size of the quad
-        Vector3 quadSize = weldSurfaceRenderer.bounds.size;
-
-        // Normalize coordinates to -0.5 to 0.5 range based on quad size
-        float normalizedX = localPos.x / quadSize.x;
-        float normalizedY = localPos.y / quadSize.y;
+        // Since a quad is 1x1 in local space, we can directly use localPos
+        // No need to divide by quadSize as localPos is already in the -0.5 to 0.5 range
+        float normalizedX = localPos.x;
+        float normalizedY = localPos.y;
 
         // Convert to 0-1 UV space
         float u = normalizedX + 0.5f;
@@ -242,7 +276,7 @@ public class WeldPaintSystem : MonoBehaviour
             Debug.Log($"Normalized Pos: ({normalizedX}, {normalizedY})");
             Debug.Log($"UV: ({u}, {v})");
             Debug.Log($"Texture Pos: ({texU}, {texV})");
-            Debug.Log($"Quad Size: {quadSize}");
+            Debug.Log($"Texture Pos: ({texU}, {texV})");
         }
 
         return new Vector2(texU, texV);
@@ -496,8 +530,9 @@ public class WeldPaintSystem : MonoBehaviour
     public void DisableWelding()
     {
         canWeld = false;
-        enabled = false;
+        //enabled = false;
         ResetProgressChecking();
+        /*
         // Clear the weld texture when disabled
         if (weldTexture != null)
         {
@@ -511,18 +546,21 @@ public class WeldPaintSystem : MonoBehaviour
         {
             paintingVolume.enabled = false;
         }
+        */
     }
 
     public void EnableWelding()
     {
         canWeld = true;
-        enabled = true;
+        //enabled = true;
         ResetProgressChecking();
         // Re-enable the painting volume collider
+        /*
         if (paintingVolume != null)
         {
             paintingVolume.enabled = true;
         }
+        */
     }
 
     private void OnEnable()
