@@ -4868,6 +4868,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5173236439303929225}
+  - component: {fileID: 3761964781665057814}
   m_Layer: 0
   m_Name: WeldPoint
   m_TagString: Untagged
@@ -4890,6 +4891,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2503442573156687925}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3761964781665057814
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7373867180578707045}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc88502757497a845b1cfa9755be2a8b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  velocitySmoothing: 0.5
+  positionSmoothing: 0.5
+  useFixedUpdate: 1
 --- !u!1001 &2680972998401673182
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5062,6 +5078,7 @@ MonoBehaviour:
   sparkParticles: {fileID: 8130074390568029595}
   weldPoint: {fileID: 5173236439303929225}
   paintSystem: {fileID: 0}
+  positionTracker: {fileID: 3761964781665057814}
 --- !u!114 &8978639926889750769
 MonoBehaviour:
   m_ObjectHideFlags: 0

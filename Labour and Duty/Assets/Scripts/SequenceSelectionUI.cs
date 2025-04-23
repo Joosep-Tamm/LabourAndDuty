@@ -67,7 +67,7 @@ public class SequenceSelectionUI : MonoBehaviour
     {
         rhythmManager.currentSequenceIndex = sequenceIndex;
         rhythmManager.ResetSequence();
-        rhythmManager.StartSequence();
+        rhythmManager.StartSequence(sequenceIndex);
         gameObject.SetActive(false); // Hide UI after selection
     }
 

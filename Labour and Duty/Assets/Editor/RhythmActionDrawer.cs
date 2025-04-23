@@ -11,7 +11,7 @@ public class RhythmActionDrawer : PropertyDrawer
 
         float lineHeight = EditorGUIUtility.singleLineHeight;
         float spacing = EditorGUIUtility.standardVerticalSpacing;
-        float totalHeight = lineHeight * 5 + spacing * 4; // Base properties
+        float totalHeight = lineHeight * 6 + spacing * 5; // Base properties
 
         var actionTypeProp = property.FindPropertyRelative("actionType");
         if (actionTypeProp != null)
@@ -86,60 +86,79 @@ public class RhythmActionDrawer : PropertyDrawer
     {
         if (property == null) return;
 
+        // This makes the entire property selectable as one element
         EditorGUI.BeginProperty(position, label, property);
 
-        float lineHeight = EditorGUIUtility.singleLineHeight;
-        float spacing = EditorGUIUtility.standardVerticalSpacing;
+        // Draw the default array element header/foldout
+        property.isExpanded = EditorGUI.PropertyField(
+            new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight),
+            property,
+            label,
+            false
+        );
 
-        Rect currentRect = new Rect(position.x, position.y, position.width, lineHeight);
-
-        // Draw base properties
-        var actionTypeProp = property.FindPropertyRelative("actionType");
-        if (actionTypeProp != null)
+        if (property.isExpanded)
         {
-            EditorGUI.PropertyField(currentRect, actionTypeProp);
-            currentRect.y += lineHeight + spacing;
+            EditorGUI.indentLevel++;
 
-            EditorGUI.PropertyField(currentRect, property.FindPropertyRelative("actionTime"));
-            currentRect.y += lineHeight + spacing;
+            float lineHeight = EditorGUIUtility.singleLineHeight;
+            float spacing = EditorGUIUtility.standardVerticalSpacing;
+            Rect currentRect = new Rect(
+                position.x,
+                position.y + lineHeight + spacing,
+                position.width,
+                lineHeight
+            );
 
-            EditorGUI.PropertyField(currentRect, property.FindPropertyRelative("indicatorTime"));
-            currentRect.y += lineHeight + spacing;
-
-            EditorGUI.PropertyField(currentRect, property.FindPropertyRelative("window"));
-            currentRect.y += lineHeight + spacing;
-
-            EditorGUI.PropertyField(currentRect, property.FindPropertyRelative("targetObjectID"));
-            currentRect.y += lineHeight + spacing;
-
-            // Draw type-specific properties
-            var actionType = (ActionType)actionTypeProp.enumValueIndex;
-
-            if (actionType == ActionType.NailHit)
+            // Draw base properties
+            var actionTypeProp = property.FindPropertyRelative("actionType");
+            if (actionTypeProp != null)
             {
-                // Draw nail properties in specific order with conditional display
-                DrawNailProperties(currentRect, property, ref lineHeight, ref spacing);
-            }
-            else if (actionType == ActionType.Weld)
-            {
-                DrawWeldProperties(currentRect, property, ref lineHeight, ref spacing);
-            }
-            else
-            {
-                // Handle other action types as before
-                var derivedProps = GetDerivedTypeProperties(property, actionType);
-                if (derivedProps != null)
+                EditorGUI.PropertyField(currentRect, actionTypeProp);
+                currentRect.y += lineHeight + spacing;
+
+                EditorGUI.PropertyField(currentRect, property.FindPropertyRelative("actionTime"));
+                currentRect.y += lineHeight + spacing;
+
+                EditorGUI.PropertyField(currentRect, property.FindPropertyRelative("indicatorTime"));
+                currentRect.y += lineHeight + spacing;
+
+                EditorGUI.PropertyField(currentRect, property.FindPropertyRelative("window"));
+                currentRect.y += lineHeight + spacing;
+
+                EditorGUI.PropertyField(currentRect, property.FindPropertyRelative("targetObjectID"));
+                currentRect.y += lineHeight + spacing;
+
+                // Draw type-specific properties
+                var actionType = (ActionType)actionTypeProp.enumValueIndex;
+
+                if (actionType == ActionType.NailHit)
                 {
-                    foreach (var propName in derivedProps)
+                    // Draw nail properties in specific order with conditional display
+                    DrawNailProperties(currentRect, property, ref lineHeight, ref spacing);
+                }
+                else if (actionType == ActionType.Weld)
+                {
+                    DrawWeldProperties(currentRect, property, ref lineHeight, ref spacing);
+                }
+                else
+                {
+                    // Handle other action types as before
+                    var derivedProps = GetDerivedTypeProperties(property, actionType);
+                    if (derivedProps != null)
                     {
-                        var prop = property.FindPropertyRelative(propName);
-                        if (prop != null)
+                        foreach (var propName in derivedProps)
                         {
-                            EditorGUI.PropertyField(currentRect, prop);
-                            currentRect.y += lineHeight + spacing;
+                            var prop = property.FindPropertyRelative(propName);
+                            if (prop != null)
+                            {
+                                EditorGUI.PropertyField(currentRect, prop);
+                                currentRect.y += lineHeight + spacing;
+                            }
                         }
                     }
                 }
+                EditorGUI.indentLevel--;
             }
         }
 

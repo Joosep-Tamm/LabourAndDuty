@@ -12,8 +12,8 @@ public class MovementOnBelt : MonoBehaviour
     private bool toInteraction = false;
 
     private float elapsedTime = 0;
-    private Vector3 targetPosition;
-    private Vector3 startPosition;
+    private Vector3 localTargetPosition;
+    private Vector3 localStartPosition;
     private float totalDistance;
 
     public void MoveToInteractionArea(float time)
@@ -22,9 +22,9 @@ public class MovementOnBelt : MonoBehaviour
         move = true;
         toInteraction = true;
         elapsedTime = 0;
-        startPosition = transform.position;
-        targetPosition = transform.position + toInteractionArea;
-        totalDistance = Vector3.Distance(startPosition, targetPosition);
+
+        localStartPosition = transform.localPosition;
+        localTargetPosition = transform.position + toInteractionArea;
     }
 
     public void MoveToDropOff(float time)
@@ -33,26 +33,26 @@ public class MovementOnBelt : MonoBehaviour
         move = true;
         toInteraction = false;
         elapsedTime = 0;
-        startPosition = transform.position;
-        targetPosition = transform.position + toDropOff;
-        totalDistance = Vector3.Distance(startPosition, targetPosition);
+
+        localStartPosition = transform.localPosition;
+        localTargetPosition = transform.position + toDropOff;
     }
 
-    void Update()
+    void FixedUpdate()
     {
         if (move)
         {
-            elapsedTime += Time.deltaTime;
+            elapsedTime += Time.fixedDeltaTime;
             float percentageComplete = elapsedTime / timeToMove;
 
             if (percentageComplete <= 1.0f)
             {
-                transform.position = Vector3.Lerp(startPosition, targetPosition, percentageComplete);
+                transform.position = Vector3.Lerp(localStartPosition, localTargetPosition, percentageComplete);
             }
             else
             {
                 // Ensure we end up exactly at the target
-                transform.position = targetPosition;
+                transform.localPosition = localTargetPosition;
                 move = false;
             }
         }

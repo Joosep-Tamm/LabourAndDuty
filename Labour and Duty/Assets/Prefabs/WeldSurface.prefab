@@ -308,7 +308,7 @@ MonoBehaviour:
   startColor: {r: 1, g: 0.15242156, b: 0, a: 0.5}
   glowColor: {r: 0, g: 1, b: 0, a: 1}
   readyGlowIntensity: 4
-  lineWidth: 0.02
+  lineWidth: 0.01
   startPoint: {x: -0.5, y: 0, z: 0.01}
   endPoint: {x: 0.5, y: 0, z: 0.01}
   baseMaterial: {fileID: 2100000, guid: 7085fd16b40216143800a9fb82929c4f, type: 2}

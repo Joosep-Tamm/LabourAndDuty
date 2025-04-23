@@ -9,6 +9,7 @@ public class Welder : MonoBehaviour
     [SerializeField] private ParticleSystem sparkParticles; // Reference to your spark particle system
     [SerializeField] private Transform weldPoint; // Reference to the tip of the welder
     [SerializeField] private WeldPaintSystem paintSystem;
+    [SerializeField] private VelocityAwarePositionTracker positionTracker;
     private XRGrabInteractable grabInteractable;
     private bool isWelding = false;
     private bool isInPaintingVolume = false;
@@ -32,8 +33,9 @@ public class Welder : MonoBehaviour
     {
         if (isWelding && paintSystem != null && isInPaintingVolume)
         {
-            Debug.Log("Painting");
-            paintSystem.PaintWeld(weldPoint.position);
+            Vector3 weldPosition = positionTracker.GetTrackedPosition();
+            Debug.Log($"Painting at world coordinates: {weldPosition}, surface position: {paintSystem.transform.position}, paint point position: {weldPoint.position}");
+            paintSystem.PaintWeld(weldPosition);
         }
     }
 

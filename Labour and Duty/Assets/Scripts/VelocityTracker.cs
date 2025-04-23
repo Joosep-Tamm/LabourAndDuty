@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class VelocityTracker : MonoBehaviour
@@ -6,19 +7,23 @@ public class VelocityTracker : MonoBehaviour
     private Vector3 velocity;
     private float smoothingFactor = 0.1f;
 
-    void Start()
+    // Add a multiplier to adjust for Quest 2
+    [SerializeField] private float velocityMultiplier = 1f;
+
+    private void Start()
     {
         previousPosition = transform.position;
     }
 
-    void Update()
+    private void FixedUpdate()
     {
-        // Calculate velocity
         Vector3 currentPosition = transform.position;
-        Vector3 newVelocity = (currentPosition - previousPosition) / Time.deltaTime;
 
-        // Smooth the velocity
-        velocity = Vector3.Lerp(velocity, newVelocity, smoothingFactor);
+        // Calculate velocity in FixedUpdate for more consistent physics
+        Vector3 newVelocity = (currentPosition - previousPosition) / Time.fixedDeltaTime;
+
+        // Apply multiplier and smoothing
+        velocity = Vector3.Lerp(velocity, newVelocity * velocityMultiplier, smoothingFactor);
 
         previousPosition = currentPosition;
     }
@@ -28,9 +33,29 @@ public class VelocityTracker : MonoBehaviour
         return velocity;
     }
 
-    // Optional: For more accurate throwing calculations
+    // Optional: Store multiple frames for more accurate velocity
+    private Queue<Vector3> velocityWindow = new Queue<Vector3>(10);
+    private int windowSize = 10;
+
     public Vector3 GetSmoothedVelocity()
     {
-        return velocity;
+        if (velocityWindow.Count == 0) return velocity;
+
+        Vector3 averageVelocity = Vector3.zero;
+        foreach (Vector3 v in velocityWindow)
+        {
+            averageVelocity += v;
+        }
+        return averageVelocity / velocityWindow.Count;
+    }
+
+    private void LateUpdate()
+    {
+        // Store velocity history
+        velocityWindow.Enqueue(velocity);
+        if (velocityWindow.Count > windowSize)
+        {
+            velocityWindow.Dequeue();
+        }
     }
 }

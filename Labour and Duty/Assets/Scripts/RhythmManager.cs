@@ -63,7 +63,7 @@ public class NailRhythmAction : RhythmAction
 {
     public float correctAngleThreshold = 30f;
     public float correctHitSpeed = 0.7f;
-    public float hitsNeeded = 1f;
+    public int hitsNeeded = 1;
     public float length;
     
     public bool autoSpaceHits = true;
@@ -114,6 +114,7 @@ public class SpawnableObject
 public class LevelSequence
 {
     public string sequenceName;
+    public AudioClip song;
     public SpawnableObject[] spawnableObjects;  // List of objects to spawn and when
     [SerializeReference]
     public RhythmAction[] actions;    // List of actions to perform on those objects
@@ -142,8 +143,11 @@ public class RhythmManager : MonoBehaviour
     private float sequenceStartTime = 0f;
     private float pausedTime = 0f;
     private bool isPaused = false;
+    public int score = 0;
+    public int possibleScore = 0;
 
     [SerializeField] private SequenceSelectionUI selectionUI;
+    [SerializeField] private Scoreboard scoreboard;
     private bool isInitialized = false;
 
     [SerializeField] private AudioSource audioSource;
@@ -151,9 +155,9 @@ public class RhythmManager : MonoBehaviour
     [SerializeField] private string[] parentObjectTags;
 
     [SerializeField] private XRRayInteractor leftInteractor;
-    [SerializeField] private XRInteractorLineVisual leftInteractorVisual;
+    [SerializeField] private XRLineVisual leftInteractorVisual;
     [SerializeField] private XRRayInteractor rightInteractor;
-    [SerializeField] private XRInteractorLineVisual rightInteractorVisual;
+    [SerializeField] private XRLineVisual rightInteractorVisual;
 
     void Start()
     {
@@ -183,6 +187,11 @@ public class RhythmManager : MonoBehaviour
         rightInteractorVisual.enabled = false;
     }
 
+    private void UpdateScoreboard()
+    {
+        scoreboard.SetScore(score, possibleScore);
+    }
+
     private void InitializeSequence()
     {
         // Initialize any necessary components without starting the timing
@@ -191,7 +200,7 @@ public class RhythmManager : MonoBehaviour
         // ... any other initialization
     }
 
-    public void StartSequence()
+    public void StartSequence(int sequenceIndex)
     {
         StopAllCoroutines();
 
@@ -206,8 +215,12 @@ public class RhythmManager : MonoBehaviour
             isInitialized = true;
         }
 
+        score = 0;
+        possibleScore = 0;
+        UpdateScoreboard();
         sequenceStartTime = (float)Time.timeAsDouble;
         isPlaying = true;
+        audioSource.clip = sequences[sequenceIndex].song;
         audioSource.Play();
         StartCoroutine(SpawnScheduler());
         StartCoroutine(ActionScheduler());
@@ -269,11 +282,14 @@ public class RhythmManager : MonoBehaviour
             spawnedObjectsById[objectToSpawn.objectID] = wheel;
             return;
         }
-        if (parentObjectTags.Contains(objectToSpawn.objectID))
+        foreach (string tag in parentObjectTags)
         {
-            GameObject spawned = spawnPoint.Spawn(objectToSpawn.prefab, objectToSpawn.beltTime);
-            spawnedObjectsById[objectToSpawn.objectID] = spawned;
-            return;
+            if (objectToSpawn.objectID.Contains(tag))
+            {
+                GameObject spawned = spawnPoint.Spawn(objectToSpawn.prefab, objectToSpawn.beltTime);
+                spawnedObjectsById[objectToSpawn.objectID] = spawned;
+                return;
+            }
         }
         if (!spawnedObjectsById.ContainsKey(objectToSpawn.parentID))
         {
@@ -285,9 +301,9 @@ public class RhythmManager : MonoBehaviour
         spawnedObject.transform.localPosition = objectToSpawn.position;
         spawnedObject.transform.localRotation = Quaternion.Euler(objectToSpawn.rotation);
         spawnedObject.transform.localScale = objectToSpawn.scale;
-        Debug.Log("Spawning object: " + objectToSpawn.objectID + ", time: " + Time.timeAsDouble);
+        //Debug.Log("Spawning object: " + objectToSpawn.objectID + ", time: " + Time.timeAsDouble);
         spawnedObjectsById[objectToSpawn.objectID] = spawnedObject;
-        Debug.Log("Item " + objectToSpawn.prefab.name + " spawned at local pos: " + spawnedObject.transform.localPosition);
+        //Debug.Log("Item " + objectToSpawn.prefab.name + " spawned at local pos: " + spawnedObject.transform.localPosition);
 
         // If this is a weld surface, store its systems
         WeldGuideSystem guideSystem = spawnedObject.GetComponentInChildren<WeldGuideSystem>();
@@ -352,7 +368,28 @@ public class RhythmManager : MonoBehaviour
 
     private void SpawnNewAction(RhythmAction action)
     {
-        Debug.Log("Spawning action: " + action.actionType + ", " + action.targetObjectID);
+        switch (action.actionType)
+        {
+            case ActionType.NailHit:
+                NailRhythmAction nailAction = (NailRhythmAction)action;
+                possibleScore += nailAction.hitsNeeded * 100;
+                UpdateScoreboard();
+                break;
+            case ActionType.WrenchPlace:
+            case ActionType.WrenchRotate:
+                possibleScore += 100;
+                UpdateScoreboard();
+                break;
+            case ActionType.Weld:
+                possibleScore += 500; 
+                UpdateScoreboard(); 
+                break;
+            case ActionType.Placement:
+                possibleScore += 200;
+                UpdateScoreboard();
+                break;
+        }
+        //Debug.Log("Spawning action: " + action.actionType + ", " + action.targetObjectID);
         // Find the target object this action applies to
         GameObject targetObject;
         if (!spawnedObjectsById.TryGetValue(action.targetObjectID, out targetObject))
@@ -432,7 +469,7 @@ public class RhythmManager : MonoBehaviour
                 break;
 
             case ActionType.Placement:
-                Debug.Log("Spawning placement action");
+                //Debug.Log("Spawning placement action");
                 var placementAction = action as PlacementRhythmAction;
                 if (placementAction != null)
                 {
@@ -466,6 +503,7 @@ public class RhythmManager : MonoBehaviour
             if (currentTime > action.actionTime + action.window)
             {
                 //Debug.Log($"Action window expired: {action.actionType} on {action.targetObjectID} at time {currentTime}");
+
                 switch (action.actionType)
                 {
                     case ActionType.WrenchPlace:
@@ -482,11 +520,23 @@ public class RhythmManager : MonoBehaviour
                         break;
 
                     case ActionType.Weld:
+                        bool actionComplete = false;
                         if (weldSystems.ContainsKey(action.targetObjectID))
                         {
                             weldSystems[action.targetObjectID].guideSystem.HideGuideLine();
                             weldSystems[action.targetObjectID].paintSystem.DisableWelding();
+                            var (_, paintSystem) = weldSystems[action.targetObjectID];
+                            var accuracy = paintSystem.CheckWeldProgress();
+                            actionComplete = true;
+                            score += Mathf.RoundToInt(accuracy * 500);
+                            UpdateScoreboard();
                         }
+                        if (actionComplete)
+                        {
+                            HandleSuccessfulAction(action);
+                        }
+                        break;
+                    case ActionType.Placement:
                         break;
                 }
 
@@ -504,7 +554,7 @@ public class RhythmManager : MonoBehaviour
                 HandleMissedAction(action);
                 activeActions.RemoveAt(i);
             }
-            // Check if action is complete within window
+            // Check if action is within window
             else if (IsWithinWindow(currentTime, action.actionTime, action.window))
             {
                 switch (action.actionType)
@@ -522,15 +572,8 @@ public class RhythmManager : MonoBehaviour
                         }
                         break;
                 }
-                bool actionComplete = CheckActionCompletion(action);
-                if (actionComplete)
-                {
-                    HandleSuccessfulAction(action);
-                    activeActions.RemoveAt(i);
-                }
             }
         }
-
         if (outOfActions && !activeActions.Any())
         {
             HandleSequenceComplete();
@@ -618,7 +661,12 @@ public class RhythmManager : MonoBehaviour
     {
         if (wrenchAction == null)
         {
-            Debug.LogError("WrenchAction is null");
+            Debug.Log("WrenchAction is null");
+            return;
+        }
+        if (targetObject == null)
+        {
+            Debug.Log("targetObject is null");
             return;
         }
 
@@ -655,7 +703,7 @@ public class RhythmManager : MonoBehaviour
 
             if (indicatorObj != null)
             {
-                Debug.Log($"Setting up {indicatorName} for {wrenchAction.targetObjectID}");
+                //Debug.Log($"Setting up {indicatorName} for {wrenchAction.targetObjectID}");
                 indicatorObj.GetComponent<Indicator>().timeToHit = wrenchAction.indicatorTime;
                 indicatorObj.SetActive(true);
                 activeBolts[(wrenchAction.targetObjectID, wrenchAction.actionType)] = (boltInteraction, wrenchAction, indicatorObj);
@@ -674,6 +722,8 @@ public class RhythmManager : MonoBehaviour
         {
             if (success)
             {
+                score += 100;
+                UpdateScoreboard();
                 // Hide indicator
                 if (indicator != null)
                 {
@@ -699,7 +749,7 @@ public class RhythmManager : MonoBehaviour
 
     private void HandlePlacementAction(GameObject targetObject, PlacementRhythmAction placementAction)
     {
-        Debug.Log("Handling placement for: " + placementAction.targetObjectID);
+        //Debug.Log("Handling placement for: " + placementAction.targetObjectID);
         var snapPoint = targetObject.GetComponent<SnapToAssemblyPoint>();
         if (snapPoint == null)
         {
@@ -726,30 +776,6 @@ public class RhythmManager : MonoBehaviour
         activePlacements[placementAction.targetObjectID] = (snapPoint, placementAction, indicator?.gameObject);
     }
 
-    private bool CheckActionCompletion(RhythmAction action)
-    {
-        switch (action.actionType)
-        {
-            case ActionType.WrenchPlace:
-                return false;
-            case ActionType.WrenchRotate:
-                return false;
-            case ActionType.Weld:
-                if (weldSystems.ContainsKey(action.targetObjectID))
-                {
-                    var (_, paintSystem) = weldSystems[action.targetObjectID];
-                    var accuracy = paintSystem.CheckWeldProgress();
-                    return accuracy >= 0.8f; // 80% accuracy threshold
-                }
-                return false;
-            case ActionType.NailHit:
-                // Nail completion is handled by its own system
-                return false;
-            default:
-                return false;
-        }
-    }
-
     private void HandleNailHit(string nailId, float angle, float speed, GameObject hammer)
     {
         if (!activeNails.ContainsKey(nailId)) return;
@@ -765,6 +791,9 @@ public class RhythmManager : MonoBehaviour
             if (angle < action.correctAngleThreshold && speed > action.correctHitSpeed)
             {
                 // Successful hit
+                score += 100;
+                UpdateScoreboard();
+
                 var hammerhaptics = hammer.GetComponent<ToolHaptics>();
                 if (hammerhaptics != null)
                 {
@@ -786,9 +815,14 @@ public class RhythmManager : MonoBehaviour
                     HandleNailSuccess(nailId);
                 }
             }
+            else
+            {
+                Debug.Log($"Angle: {angle}, expected at most {action.correctAngleThreshold}. speed: {speed}, expected at least {action.correctHitSpeed}");
+            }
         }
         else if (currentTime > globalHitTime + timing.window)
         {
+            Debug.Log("Failed hit");
             // Failed this hit
             HandleNailFailure(nailId);
         }
@@ -869,6 +903,9 @@ public class RhythmManager : MonoBehaviour
         {
             if (success)
             {
+                score += 200;
+                UpdateScoreboard();
+
                 // Hide indicator
                 if (indicator != null)
                 {
@@ -942,12 +979,12 @@ public class RhythmManager : MonoBehaviour
                 if (activeBolts.ContainsKey(key))
                 {
                     var (bolt, boltAction, indicator) = activeBolts[key];
-                    Debug.Log($"Handling missed action for {action.targetObjectID}, type: {action.actionType}");
-                    Debug.Log($"Found indicator: {indicator != null}");
+                    //Debug.Log($"Handling missed action for {action.targetObjectID}, type: {action.actionType}");
+                    //Debug.Log($"Found indicator: {indicator != null}");
                     //Debug.Log($"Deactivating bolt indicator: {indicator != null}");
                     if (indicator != null)
                     {
-                        Debug.Log($"Deactivating indicator for {action.targetObjectID}");
+                        //Debug.Log($"Deactivating indicator for {action.targetObjectID}");
                         indicator.SetActive(false);
                     }
                     activeBolts.Remove(key);
@@ -995,6 +1032,10 @@ public class RhythmManager : MonoBehaviour
             if (obj != null)
                 Destroy(obj);
         }
+        isPlaying = false;
+        isPaused = false;
+        outOfActions = false;
+        activeActions.Clear();
         spawnedObjectsById.Clear();
         boltIndicators.Clear();
         actionIndicators.Clear();
@@ -1002,17 +1043,6 @@ public class RhythmManager : MonoBehaviour
         activeNails.Clear();
         activePlacements.Clear();
         audioSource.Stop();
-
-        // Move to next sequence or end
-        currentSequenceIndex++;
-        if (currentSequenceIndex < sequences.Length)
-        {
-            StartSequence();
-        }
-        else
-        {
-            enabled = false;
-        }
     }
 
     public void ResetSequence()
@@ -1024,6 +1054,7 @@ public class RhythmManager : MonoBehaviour
         }
         isPlaying = false;
         isPaused = false;
+        outOfActions = false;
         activeActions.Clear();
         spawnedObjectsById.Clear();
         boltIndicators.Clear();

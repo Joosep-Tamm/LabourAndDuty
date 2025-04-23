@@ -136,25 +136,21 @@ public class WeldPaintSystem : MonoBehaviour
             paintingVolume = gameObject.AddComponent<BoxCollider>();
         }
 
-        Bounds worldBounds = weldSurfaceRenderer.bounds;
+        Bounds localBounds = weldSurfaceRenderer.localBounds;
 
         Vector3 localSize = new Vector3(
-            worldBounds.size.x / transform.lossyScale.x,
-            worldBounds.size.y / transform.lossyScale.y,
-            paintingHeight * 2f    // Since this is already in local space
+            localBounds.size.x,
+            localBounds.size.y,
+            paintingHeight * 2f
         );
 
-        Debug.Log($"World bounds size: {worldBounds.size}");
-        Debug.Log($"Local scale: {transform.lossyScale}");
-        Debug.Log($"Calculated local size: {localSize}");
-
-        // Make the collider match the surface width/length but taller
         paintingVolume.size = localSize;
-        paintingVolume.center = new Vector3(0, 0, 0); // Center it on the surface
-        paintingVolume.isTrigger = true; // Make it a trigger
+        paintingVolume.center = localBounds.center;
+        paintingVolume.isTrigger = true;
 
-        Debug.Log($"Bounds: {paintingVolume.bounds}");
-        Debug.Log($"Size: {paintingVolume.size}");
+        Debug.Log($"Local Bounds: {localBounds}");
+        Debug.Log($"Painting Volume Size: {localSize}");
+        Debug.Log($"Painting Volume Center: {paintingVolume.center}");
     }
 
     private Vector2 GetScaledBrushSize()
@@ -178,7 +174,7 @@ public class WeldPaintSystem : MonoBehaviour
     {
         if (!isInitialized || !canWeld || !enabled || weldSurfaceRenderer == null)
         {
-            //Debug.Log($"{isInitialized}, {canWeld}, {enabled}");
+            Debug.Log($"{isInitialized}, {canWeld}, {enabled}");
             return;
         }
 
@@ -188,9 +184,9 @@ public class WeldPaintSystem : MonoBehaviour
 
         // Check if point is within bounds
         Bounds volumeBounds = paintingVolume.bounds;
-        if (!volumeBounds.Contains(worldPosition))
+        if (!volumeBounds.Contains(projectedPoint))
         {
-            Debug.Log("paint spot out of bounds, point: " + worldPosition + ", bounds: " + volumeBounds);
+            Debug.Log("paint spot out of bounds, point: " + projectedPoint + ", bounds: " + volumeBounds);
             return; // Point is not within this surface's volume
         }
 
@@ -250,36 +246,32 @@ public class WeldPaintSystem : MonoBehaviour
     {
         if (weldSurfaceRenderer == null) return Vector2.zero;
 
-        // Get the plane's transform
-        Transform planeTransform = weldSurfaceRenderer.transform;
+        Bounds bounds = weldSurfaceRenderer.localBounds;
 
         // Convert world position to local position on the surface
         Vector3 localPos = transform.InverseTransformPoint(worldPos);
 
-        // Since a quad is 1x1 in local space, we can directly use localPos
-        // No need to divide by quadSize as localPos is already in the -0.5 to 0.5 range
-        float normalizedX = localPos.x;
-        float normalizedY = localPos.y;
-
-        // Convert to 0-1 UV space
-        float u = normalizedX + 0.5f;
-        float v = normalizedY + 0.5f;
+        // Normalize position based on bounds size
+        Vector2 normalizedPos = new Vector2(
+            (localPos.x - bounds.min.x)/ bounds.size.x,
+            (localPos.y - bounds.min.y)/ bounds.size.y
+        );
 
         // Convert to texture space
-        float texU = u * textureSize;
-        float texV = v * textureSize;
+        Vector2 texturePos = new Vector2(
+            normalizedPos.x * textureSize,
+            normalizedPos.y * textureSize
+        );
 
         if (logPaintPositions)
         {
             Debug.Log($"World Pos: {worldPos}");
             Debug.Log($"Local Pos: {localPos}");
-            Debug.Log($"Normalized Pos: ({normalizedX}, {normalizedY})");
-            Debug.Log($"UV: ({u}, {v})");
-            Debug.Log($"Texture Pos: ({texU}, {texV})");
-            Debug.Log($"Texture Pos: ({texU}, {texV})");
+            Debug.Log($"Normalized Pos: ({normalizedPos.x}, {normalizedPos.y})");
+            Debug.Log($"Texture Pos: {texturePos}");
         }
 
-        return new Vector2(texU, texV);
+        return texturePos;
     }
 
     private Vector3 TextureToWorldPosition(Vector2 uvPosition)
@@ -387,7 +379,7 @@ public class WeldPaintSystem : MonoBehaviour
                         //Debug.Log($"Pixel at ({x}, {y}): alpha = {pixel.a}, red = {pixel.r}");
                     }
 
-                    if (pixel.r > 0.01f)
+                    if (pixel.r > 0.001f)
                     {
                         correctPoints++;
                     }
@@ -435,8 +427,8 @@ public class WeldPaintSystem : MonoBehaviour
         float textureLength = Vector2.Distance(startUV, endUV);
 
         // Use the larger of the two to ensure adequate sampling
-        float finalLength = Mathf.Max(length * textureSize, textureLength);
-        return Mathf.Max(10, Mathf.CeilToInt(finalLength));
+        // float finalLength = Mathf.Max(length * textureSize, textureLength);
+        return Mathf.Max(10, Mathf.CeilToInt(textureLength));
     }
 
     private float EstimateBezierLength(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, int segments = 10)

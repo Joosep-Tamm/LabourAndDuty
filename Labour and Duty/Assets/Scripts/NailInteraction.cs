@@ -27,13 +27,16 @@ public class NailInteraction : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        Debug.Log(other.name);
         if (other.CompareTag("Hammer"))
         {
+            Debug.Log("Hammer detected");
             hammerAxis = other.gameObject.transform.right;
 
             VelocityTracker hammerVelocity = other.gameObject.GetComponent<VelocityTracker>();
             if (hammerVelocity != null)
             {
+                Debug.Log("Checking Hammer hit");
                 CheckHammerHit(hammerVelocity, other.gameObject);
             }
         }
@@ -41,6 +44,7 @@ public class NailInteraction : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
+        Debug.Log(other.name);
         if (other.CompareTag("Hammer")) hit = false;
     }
 
@@ -53,6 +57,10 @@ public class NailInteraction : MonoBehaviour
 
             onNailHit?.Invoke(angle, speedTowardNail, hammer);
             hit = true;
+        }
+        else
+        {
+            Debug.Log("Nail already hit");
         }
     }
 
