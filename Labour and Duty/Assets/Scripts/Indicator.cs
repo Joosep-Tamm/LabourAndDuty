@@ -17,7 +17,7 @@ public class Indicator : MonoBehaviour
     public float timeToHit;
 
     private Material materialInstance;
-    // Start is called before the first frame update
+
     void Start()
     {
         InitializeIndicator();
@@ -30,7 +30,6 @@ public class Indicator : MonoBehaviour
 
     private void InitializeIndicator()
     {
-        // Only create new material instance if we don't have one
         if (materialInstance == null)
         {
             materialInstance = new Material(baseMaterial);
@@ -52,7 +51,6 @@ public class Indicator : MonoBehaviour
         materialInstance.SetColor("_EmissionColor", Color.black);
     }
 
-    // Update is called once per frame
     void Update()
     {
         timeElapsed += Time.deltaTime;
@@ -73,7 +71,6 @@ public class Indicator : MonoBehaviour
 
     private void ShowTargetReachedEffect()
     {
-        // Using emission for a glow effect
         // Debug.Log("Ready for hit!");
         materialInstance.SetColor("_EmissionColor", glowColor * glowIntensity);
         materialInstance.color = glowColor;

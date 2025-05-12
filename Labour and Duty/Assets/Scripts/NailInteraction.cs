@@ -48,6 +48,7 @@ public class NailInteraction : MonoBehaviour
         if (other.CompareTag("Hammer")) hit = false;
     }
 
+    // This method was created with the help of Claude Sonnet LLM
     private void CheckHammerHit(VelocityTracker hammerVelocity, GameObject hammer)
     {
         if (!hit)
@@ -64,7 +65,6 @@ public class NailInteraction : MonoBehaviour
         }
     }
 
-    // Public method for manager to move the nail
     public void MoveNail(float distance)
     {
         transform.position = new Vector3(
@@ -74,7 +74,6 @@ public class NailInteraction : MonoBehaviour
         );
     }
 
-    // Public methods for manager to control nail state
     public void DisableNail()
     {
         GetComponent<Collider>().enabled = false;

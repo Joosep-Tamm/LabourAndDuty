@@ -249,7 +249,7 @@ public class RhythmManager : MonoBehaviour
         if (isPaused) return (float)(Time.timeAsDouble - pausedTime);
         return (float)(Time.timeAsDouble - sequenceStartTime);
     }
-
+    // This method was created with the help of Claude Sonnet LLM
     private IEnumerator SpawnScheduler()
     {
         if (sequences.Length == 0 || currentSequenceIndex >= sequences.Length) yield break;
@@ -340,7 +340,7 @@ public class RhythmManager : MonoBehaviour
         float currentTime = GetSequenceTime();
         ProcessActiveActions(currentTime);
     }
-
+    // This method was created with the help of Claude Sonnet LLM
     private IEnumerator ActionScheduler()
     {
         if (sequences.Length == 0 || currentSequenceIndex >= sequences.Length) yield break;
@@ -579,7 +579,7 @@ public class RhythmManager : MonoBehaviour
             HandleSequenceComplete();
         }
     }
-
+    // This method was created with the help of Claude Sonnet LLM
     private IEnumerator HandleNailIndicators(string nailId)
     {
         if (!activeNails.ContainsKey(nailId)) yield break;
@@ -656,7 +656,7 @@ public class RhythmManager : MonoBehaviour
 
         //Debug.Log($"Completed all hits for {nailId}");
     }
-
+    // This method was created with the help of Claude Sonnet LLM
     private void HandleWrenchAction(GameObject targetObject, WrenchRhythmAction wrenchAction, string indicatorName)
     {
         if (wrenchAction == null)
@@ -710,7 +710,7 @@ public class RhythmManager : MonoBehaviour
             }
         }
     }
-
+    // This method was created with the help of Claude Sonnet LLM
     private void HandleBoltAction(string boltId, ActionType actionType, bool success)
     {
         if (!activeBolts.ContainsKey((boltId, actionType))) return;
@@ -746,7 +746,7 @@ public class RhythmManager : MonoBehaviour
             }
         }
     }
-
+    // This method was created with the help of Claude Sonnet LLM
     private void HandlePlacementAction(GameObject targetObject, PlacementRhythmAction placementAction)
     {
         //Debug.Log("Handling placement for: " + placementAction.targetObjectID);

@@ -5,7 +5,7 @@ using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 public class XRLineVisual : MonoBehaviour
 {
-    [SerializeField] private XRRayInteractor rayInteractor; // Reference to the working ray interactor
+    [SerializeField] private XRRayInteractor rayInteractor; 
 
     [Header("Ray Visualization")]
     [SerializeField] private Color rayColor = Color.cyan;

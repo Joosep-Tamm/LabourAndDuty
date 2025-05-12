@@ -6,20 +6,16 @@ using UnityEngine.XR.Interaction.Toolkit.Interactables;
 public class SnapToAssemblyPoint : MonoBehaviour
 {
     public string compareTag;
-    public System.Action<bool> OnObjectSnapped; // Add this callback
+    public System.Action<bool> OnObjectSnapped; // Event for completion of assembly
     private bool hasSnapped = false;
     private bool allowSnap = false;
     private GameObject snappedObject = null;
 
-    private void Start()
-    {
-        
-    }
     private void OnTriggerEnter(Collider other)
     {
-        if (!hasSnapped && allowSnap && other.CompareTag(compareTag)) // Check if the object is correct
+        if (!hasSnapped && allowSnap && other.CompareTag(compareTag)) 
         {
-            SnapToPosition(other.gameObject); // Snap the object
+            SnapToPosition(other.gameObject); 
             GetComponent<MeshRenderer>().enabled = false;
 
             // Trigger the callback for rhythm game
@@ -33,7 +29,6 @@ public class SnapToAssemblyPoint : MonoBehaviour
     {
         Debug.Log("Snapping " + snapObject.name + " to " + gameObject.name);
 
-        // First, force deselect and disable the XR Grab Interactable
         XRGrabInteractable grabInteractable = snapObject.GetComponent<XRGrabInteractable>();
         if (grabInteractable != null)
         {
@@ -42,7 +37,6 @@ public class SnapToAssemblyPoint : MonoBehaviour
             {
                 grabInteractable.enabled = false;
             }
-            // Store the original parent before disabling
             Transform originalParent = snapObject.transform.parent;
             grabInteractable.enabled = false;
 
@@ -54,7 +48,6 @@ public class SnapToAssemblyPoint : MonoBehaviour
             }
         }
 
-        // Optionally, disable the Rigidbody if you no longer need physics for the object
         Rigidbody rb = snapObject.GetComponent<Rigidbody>();
         if (rb != null)
         {
@@ -64,7 +57,6 @@ public class SnapToAssemblyPoint : MonoBehaviour
             rb.angularVelocity = Vector3.zero;
         }
 
-        // Snap the object's position and rotation to the assembly point
         snapObject.transform.position = transform.position;
         snapObject.transform.rotation = transform.rotation;
 

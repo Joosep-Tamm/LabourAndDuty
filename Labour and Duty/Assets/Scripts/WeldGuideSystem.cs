@@ -118,7 +118,7 @@ public class WeldGuideSystem : MonoBehaviour
         guideLine.SetPositions(points);
     }
 
-    // For creating a curved line with control points
+    // This method was created with the help of Claude Sonnet LLM
     public void SetBezierCurve(Vector3 start, Vector3 control1, Vector3 control2, Vector3 end, int segments = 30)
     {
         linePoints = new Vector3[segments];
@@ -131,7 +131,7 @@ public class WeldGuideSystem : MonoBehaviour
         guideLine.positionCount = segments;
         guideLine.SetPositions(linePoints);
     }
-
+    // This method was created with the help of Claude Sonnet LLM
     private Vector3 CalculateBezierPoint(float t, Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3)
     {
         float u = 1 - t;

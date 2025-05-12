@@ -1,10 +1,10 @@
-// SequenceSelectionUI.cs
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.EventSystems;
 using UnityEngine.XR.Interaction.Toolkit.UI;
 
+// This class and functionality was made largely using Claude Sonnet LLM
 public class SequenceSelectionUI : MonoBehaviour
 {
     [SerializeField] private RhythmManager rhythmManager;
@@ -25,10 +25,8 @@ public class SequenceSelectionUI : MonoBehaviour
 
     private void Awake()
     {
-        // Find all EventSystems in the scene
         EventSystem[] eventSystems = FindObjectsOfType<EventSystem>();
-
-        // If we have more than one, destroy the extras
+        
         if (eventSystems.Length > 1)
         {
             for (int i = 1; i < eventSystems.Length; i++)

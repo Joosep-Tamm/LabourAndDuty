@@ -51,7 +51,6 @@ public class MovementOnBelt : MonoBehaviour
             }
             else
             {
-                // Ensure we end up exactly at the target
                 transform.localPosition = localTargetPosition;
                 move = false;
             }

@@ -69,7 +69,7 @@ public class WeldPaintSystem : MonoBehaviour
 
         canWeld = true;
     }
-
+    // This method was created with the help of Claude Sonnet LLM
     private void CreateCircularBrush()
     {
         circularBrush = new Texture2D(32, 32, TextureFormat.RGBA32, false);
@@ -169,7 +169,7 @@ public class WeldPaintSystem : MonoBehaviour
 
         return new Vector2(brushSizeX, brushSizeY);
     }
-
+    // This method was created with the help of Claude Sonnet LLM
     public void PaintWeld(Vector3 worldPosition)
     {
         if (!isInitialized || !canWeld || !enabled || weldSurfaceRenderer == null)
@@ -311,7 +311,7 @@ public class WeldPaintSystem : MonoBehaviour
             Gizmos.DrawSphere(worldCorner, 0.005f);
         }
     }
-
+    // This method was created with the help of Claude Sonnet LLM
     public float CheckWeldProgress(float toleranceDistance = 0.02f)
     {
         if (Time.time - lastProgressCheckTime < progressCheckInterval)
@@ -401,7 +401,7 @@ public class WeldPaintSystem : MonoBehaviour
         lastProgressCheckTime = 0f; // Reset the timer
         return CheckWeldProgress(toleranceDistance); // Force a new calculation
     }
-
+    // This method was created with the help of Claude Sonnet LLM
     private int CalculateSampleCount(Vector3[] points)
     {
         float length;
@@ -430,7 +430,7 @@ public class WeldPaintSystem : MonoBehaviour
         // float finalLength = Mathf.Max(length * textureSize, textureLength);
         return Mathf.Max(10, Mathf.CeilToInt(textureLength));
     }
-
+    // This method was created with the help of Claude Sonnet LLM
     private float EstimateBezierLength(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, int segments = 10)
     {
         float length = 0;
@@ -468,7 +468,7 @@ public class WeldPaintSystem : MonoBehaviour
         }
         return texturePoint;
     }
-
+    // This method was created with the help of Claude Sonnet LLM
     private Vector2 GetTangentAtPoint(Vector3[] points, float t)
     {
         Vector3 worldTangent;
@@ -488,7 +488,7 @@ public class WeldPaintSystem : MonoBehaviour
         Vector2 p2 = WorldToTexturePosition(points[0] + worldTangent);
         return (p2 - p1).normalized;
     }
-
+    // This method was created with the help of Claude Sonnet LLM
     private Vector3 CalculateBezierPoint(float t, Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3)
     {
         float u = 1 - t;
@@ -504,7 +504,7 @@ public class WeldPaintSystem : MonoBehaviour
 
         return point;
     }
-
+    // This method was created with the help of Claude Sonnet LLM
     private Vector3 CalculateBezierTangent(float t, Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3)
     {
         float u = 1 - t;

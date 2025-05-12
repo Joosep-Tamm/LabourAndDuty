@@ -11,6 +11,7 @@ public class SpawnPoint : MonoBehaviour
     [SerializeField] private Vector3 vesselPositionOffset;
     [SerializeField] private Vector3 vesselRotation;
 
+    // This method was created with the help of Claude Sonnet LLM
     public GameObject Spawn(GameObject prefab, float timeOnBelt)
     {
         Quaternion rotation;

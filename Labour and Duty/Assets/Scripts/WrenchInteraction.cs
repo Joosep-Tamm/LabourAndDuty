@@ -53,7 +53,7 @@ public class WrenchInteraction : MonoBehaviour
             bolt = null;
         }
     }
-
+    // This method was created with the help of Claude Sonnet LLM
     private void CheckWrenchAlignment()
     {
         // Check position
